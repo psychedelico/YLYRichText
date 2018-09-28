@@ -695,17 +695,9 @@ public class YlyRichText : MaskableGraphic, ILayoutElement, IPointerClickHandler
 			return;
 		}
 
-		GameObject uiCameraGo = GameObject.FindGameObjectWithTag("UICamera");
-		if(uiCameraGo == null){
-			return;
-		}
-		Camera uiCamera = uiCameraGo.GetComponent<Camera>();
-		if(uiCamera == null){
-			return;
-		}
 		int count;
 		Vector2 localPos;
-		RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, eventData.position, uiCamera, out localPos);
+		RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, eventData.position, GetUICamera(), out localPos);
 		for(int i = 0; i < m_Lines.Count; i++){
 			count = m_Lines[i].linkDatas.Count;
 			for (int j = 0; j < count; j++) {
@@ -716,9 +708,51 @@ public class YlyRichText : MaskableGraphic, ILayoutElement, IPointerClickHandler
 				}
 			}
 		}
-	}
+    }
 
-	public void OnPointerDown(PointerEventData eventData){
+    public Camera GetUICamera()
+    {
+        Canvas canvas = GetRootCanvas(transform.parent);
+        if (canvas != null){
+            if (canvas.renderMode == RenderMode.ScreenSpaceOverlay){
+                return null;
+            }else if (canvas.renderMode == RenderMode.ScreenSpaceCamera){
+                return canvas.worldCamera;
+            }else{
+                if (canvas.worldCamera == null){
+                    return Camera.main;
+                }else{
+                    return canvas.worldCamera;
+                }
+            }
+        }else{
+            return null;
+        }
+    }
+
+    public Canvas GetRootCanvas(Transform rootTransform)
+    {
+        if (rootTransform == null){
+            return null;
+        }
+        Canvas canvas = rootTransform.GetComponent<Canvas>();
+        if (canvas == null){
+            if (rootTransform.parent != null){
+                return GetRootCanvas(rootTransform.parent);
+            }else{
+                return null;
+            }
+        }else{
+            if (canvas.isRootCanvas){
+                return canvas;
+            }else{
+                return canvas.rootCanvas;
+            }
+        }
+    }
+
+
+    public void OnPointerDown(PointerEventData eventData){
 		
 	}
 
